@@ -131,6 +131,21 @@ Markdown files can be read with Glow's high-performance pager. Most of the
 keystrokes you know from `less` are the same, but you can press `?` to list
 the hotkeys.
 
+### Presentation Mode
+
+Glow can be used as a presentation tool for markdown files. When presentation
+mode is enabled, Glow splits the document into slides based on numbered H1
+headers (e.g. `# 1 Introduction`, `# 2 Details`) and displays them one at a
+time.
+
+```bash
+# Present a markdown file as slides
+glow -P presentation.md
+```
+
+Navigate between slides with `n`/`right` and `p`/`left`. A slide indicator in
+the status bar shows your current position (e.g. `[Slide 1/5]`).
+
 ## The CLI
 
 In addition to a TUI, Glow has a CLI for working with Markdown. To format a
