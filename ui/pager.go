@@ -105,11 +105,12 @@ type pagerModel struct {
 	watcher *fsnotify.Watcher
 
 	// Slide navigation: track slides and current position
-	slides          []string // Each slide's markdown content
-	currentSlide    int      // Current slide index (0-based)
-	slideMode       bool     // Whether we're in slide presentation mode
-	originalContent string   // Full document content
-	renderedContent string   // For backwards compatibility
+	slides             []string // Each slide's markdown content
+	currentSlide       int      // Current slide index (0-based)
+	slideMode          bool     // Whether we're in slide presentation mode
+	originalContent    string   // Full document content
+	renderedContent    string   // For backwards compatibility
+	resetScrollPosition bool    // Track if we should reset scroll position on next render
 }
 
 func newPagerModel(common *commonModel) pagerModel {
@@ -273,6 +274,13 @@ func (m pagerModel) update(msg tea.Msg) (pagerModel, tea.Cmd) {
 		log.Info("content rendered", "state", m.state)
 
 		m.setContent(string(msg))
+
+		// Reset scroll position if we just switched slides
+		if m.resetScrollPosition {
+			m.viewport.YOffset = 0
+			m.resetScrollPosition = false
+		}
+
 		if m.viewport.HighPerformanceRendering {
 			cmds = append(cmds, viewport.Sync(m.viewport))
 		}
@@ -531,6 +539,7 @@ func (m *pagerModel) nextPage() tea.Cmd {
 
 	if m.currentSlide < len(m.slides)-1 {
 		m.currentSlide++
+		m.resetScrollPosition = true
 		log.Debug("navigating to next slide", "slide", m.currentSlide+1, "total", len(m.slides))
 		return renderWithGlamour(*m, m.slides[m.currentSlide])
 	}
@@ -552,6 +561,7 @@ func (m *pagerModel) previousPage() tea.Cmd {
 
 	if m.currentSlide > 0 {
 		m.currentSlide--
+		m.resetScrollPosition = true
 		log.Debug("navigating to previous slide", "slide", m.currentSlide+1, "total", len(m.slides))
 		return renderWithGlamour(*m, m.slides[m.currentSlide])
 	}
